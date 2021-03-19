@@ -1,15 +1,21 @@
-#import numpad 
 import tkinter as tk
-from tkinter import Text
+from tkinter import Text, PhotoImage, Label
 from due_communication import sendData
-
+#from numpad import numpadEnable 
 
 root = tk.Tk()
-
 root.winfo_toplevel().title("NATASHA")
 
+#bg = PhotoImage(file = "/home.pi/Desktop/image.jpg") google
+
+
 canvas = tk.Canvas(root, height=1024, width=1280, bg="#263D42")
-canvas.pack()
+canvas.pack(fill=None, expand=False)
+
+
+filename = PhotoImage(file = "/home.pi/Desktop/aa.jpg")
+background_label = Label(root, image=filename)
+background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
 # ~~~~~~~Button DECLARATION~~~~~~~
 
