@@ -8,12 +8,13 @@ root.winfo_toplevel().title("NATASHA")
 
 #bg = PhotoImage(file = "/home.pi/Desktop/image.jpg") google
 
+root.attributes('-fullscreen', False) #fullscreen mode True
 
 canvas = tk.Canvas(root, height=1024, width=1280, bg="#263D42")
 canvas.pack(fill=None, expand=False)
 
 
-filename = PhotoImage(file = "/home.pi/Desktop/aa.jpg")
+filename = PhotoImage(file = "C:/Users/Work/Desktop/NATASHA-LCD/aa.png")
 background_label = Label(root, image=filename)
 background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
@@ -31,27 +32,36 @@ MotorStepMinus.place(x=1040, y= 250)
 
 # ~~~~~~~Temperature OUT-DECLARATION~~~~~~~
 
-temp_out_1 = Text(root, height=1, width=8)
-temp_out_1.place(x=650,y=650)
+temp_out_1 = Text(root, height=2, width=6)
+temp_out_1.place(x=588,y=810)
 
-temp_out_2 = Text(root, height=1, width=8)
-temp_out_2.place(x=530,y=650)
+temp_out_2 = Text(root, height=2, width=6)
+temp_out_2.place(x=520,y=810)
 
-temp_out_3 = Text(root, height=1, width=8)
-temp_out_3.place(x=410,y=650)
+temp_out_3 = Text(root, height=2, width=6)
+temp_out_3.place(x=454,y=810)
 
-temp_out_4 = Text(root, height=1, width=8)
-temp_out_4.place(x=290,y=650)
+temp_out_4 = Text(root, height=2, width=6)
+temp_out_4.place(x=386,y=810)
 
-temp_out_duza = Text(root, height=1, width=8)
-temp_out_duza.place(x=170,y=650)
+temp_out_5 = Text(root, height=2, width=6)
+temp_out_5.place(x=320,y=810)
 
-temp_out_racire = Text(root, height=1, width=8)
-temp_out_racire.place(x=50,y=650)
+temp_out_6 = Text(root, height=2, width=6)
+temp_out_6.place(x=253,y=810)
+
+temp_out_7 = Text(root, height=2, width=6)
+temp_out_7.place(x=187,y=810)
+
+temp_out_8 = Text(root, height=2, width=6)
+temp_out_8.place(x=120,y=810)
+
+temp_out_9 = Text(root, height=2, width=6)
+temp_out_9.place(x=52,y=810)
 
 
-amp_info = Text(root, height=2, width=8)
-amp_info.place(x=1150, y=650)
+motor_rpm = Text(root, height=3, width=13)
+motor_rpm.place(x=843, y=820)
 
 def temp_val_out(input_val, value):
     inputValue = input_val.get("1.0","end-1c")
@@ -62,15 +72,18 @@ def temp_val_out(input_val, value):
     sendData(send)
 
 def amp_info_out():
-    amp_info.config(text = "AMP:")
+    motor_rpm.config(text = "AMP:")
 
 
 temp_out_1.bind('<Return>', lambda event: temp_val_out(input_val=temp_out_1, value='t1'))
 temp_out_2.bind('<Return>', lambda event: temp_val_out(input_val=temp_out_2, value='t2'))
 temp_out_3.bind('<Return>', lambda event: temp_val_out(input_val=temp_out_3, value='t3'))
 temp_out_4.bind('<Return>', lambda event: temp_val_out(input_val=temp_out_4, value='t4'))
-temp_out_duza.bind('<Return>', lambda event: temp_val_out(input_val=temp_out_duza, value='td'))
-temp_out_racire.bind('<Return>', lambda event: temp_val_out(input_val=temp_out_racire, value='tr'))
+temp_out_5.bind('<Return>', lambda event: temp_val_out(input_val=temp_out_5, value='t5'))
+temp_out_6.bind('<Return>', lambda event: temp_val_out(input_val=temp_out_6, value='t6'))
+temp_out_7.bind('<Return>', lambda event: temp_val_out(input_val=temp_out_7, value='t7'))
+temp_out_8.bind('<Return>', lambda event: temp_val_out(input_val=temp_out_8, value='t8'))
+temp_out_9.bind('<Return>', lambda event: temp_val_out(input_val=temp_out_9, value='t9'))
 
 
 root.mainloop()
