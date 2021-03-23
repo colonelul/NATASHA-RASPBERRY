@@ -3,30 +3,40 @@ import threading
 import tkinter as tk
 from tkinter import * 
 from tkinter.ttk import *
-from due_communication import sendData
+import tkinter.font as font
+
 import serial
 
 root = tk.Tk()
 root.winfo_toplevel().title("NATASHA")
 
-#bg = PhotoImage(file = "/home.pi/Desktop/image.jpg") google
-
 root.attributes('-fullscreen', False) #fullscreen mode True
- 
-# =============================================================================
-# canvas = tk.Canvas(root, height=1024, width=1280, bg="#263D42")
-# canvas.pack(fill=None, expand=False)
-# =============================================================================
 
 root.geometry('1280x1024')
+try:
+    filename = PhotoImage(file = "C:/Users/Work/Desktop/NATASHA-LCD/aa.png")
+except:
+    try:
+        filename = PhotoImage(file = "/home/pi/Desktop/aa.png")
+    except TypeError:
+        pass
 
-filename = PhotoImage(file = "C:/Users/Work/Desktop/NATASHA-LCD/aa.png")
 background_label = Label(root, image=filename)
 background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
+serial_data = ''
+filter_data = ''
+update_period = 5
 serial_object = None
 
+flag = ''
+
+frame = Frame(root)
+frame.pack(side = TOP, padx=0, pady=300)
+
 def connect():
+
+    global serial_object    
 
     locations=['/dev/ttyACM0','/dev/ttyACM1','/dev/ttyACM2','/dev/ttyACM3']
 
@@ -38,56 +48,71 @@ def connect():
         except:
             print("Failed to connect on" + device)
     
+
     t1 = threading.Thread(target = get_data)
     t1.daemon = True
     t1.start()
 
+
 def update_gui():
+    
     global filter_data
     global update_period
     
     new = time.time()
 
+    while(1):
+         if filter_data:
+             try:
+                 flow["value"] = filter_data
+             except:
+                 pass
+             
+             if time.time() - new >= update_period:
+                 flow["value"] = 0
+                 new = time.time()
+
 
 def get_data():
+    
     global serial_object
     global filter_data
-
+    
     while(1):   
-        try:
-            serial_data = serial_object.readline().strip('\n').strip('\r')
-            
-            filter_data = serial_data.split(',')
-            print(filter_data)
-        
-        except TypeError:
-            pass
+         try:
+             filter_data = serial_object.readline()
+             print(filter_data)
+         
+         except TypeError:
+             pass
 
-def send():
+def send(data):
 
-    send_data = temp_out_1.get()
+    send_data = data
     
     if not send_data:
         print("Sent Nothing")
     
-    serial_object.write(send_data)
+    serial_object.write(send_data.encode())
 
 def keyboard(temp):
+    
     buttons = ['7', '8', '9',
                '4', '5', '6',
                '1', '2', '3',
                '0', '.', 'Del',
-               'Enter']
+               'Enter',
+               ]
     
     varRow = 2
     varColumn = 0
     for button in buttons:
         command = lambda x = button: select(x, temp)
         if button != 'Enter':
-            tk.Button(root, text = button, width = 5, bg="#000000", fg="#ffffff", activebackground="#ffffff",
+            tk.Button(frame, text = button, width = 5, bg="#000000", fg="#ffffff", activebackground="#ffffff",
                    activeforeground="#000000", relief = 'raised', padx=4, pady=4, bd=4, command=command).grid(row = varRow, column = varColumn)
         else:
-             tk.Button(root, text = button, width = 15, bg="#000000", fg="#ffffff", activebackground="#ffffff",
+             tk.Button(frame, text = button, width = 30, bg="#000000", fg="#ffffff", activebackground="#ffffff",
                    activeforeground="#000000", relief = 'raised', padx=4, pady=4, bd=4, command=command).grid(row = 6, column = 1)
         
         varColumn+=1
@@ -100,56 +125,222 @@ def keyboard(temp):
         if varColumn > 2 and varRow == 4:
             varColumn = 0
             varRow+=1
-        if varColumn > 2 and varRow == 5:
-            varColumn = 0
-            varRow+=1
 
 def select(x, value):
-    temp_out_1.insert(tk.END, x)
+    global flag 
+    if value == 'temp_out_1' and x != 'Enter' and x != 'Del':
+        if flag == 'enter':
+            temp_out_1.delete(0, 'end')
+        temp_out_1.insert(tk.END, x)
+        out = temp_out_1.get()
+        flag = ''
+    elif x == 'Enter':
+        flag = 'enter'
+        out = temp_out_1.get()
+        print(out)
+        send(out)
+    else:
+        temp_out_1.delete(0, 'end')
+    
+    if value == 'temp_out_2' and x != 'Enter' and x != 'Del':
+        if flag == 'enter':
+            temp_out_2.delete(0, 'end')
+        temp_out_2.insert(tk.END, x)
+        out = temp_out_2.get()
+        flag = ''
+    elif x == 'Enter':
+        flag = 'enter'
+        out = temp_out_2.get()
+        print(out)
+        send(out)
+    else:
+        temp_out_2.delete(0, 'end')
+    
+    if value == 'temp_out_3' and x != 'Enter' and x != 'Del':
+        if flag == 'enter':
+            temp_out_3.delete(0, 'end')
+        temp_out_3.insert(tk.END, x)
+        out = temp_out_3.get()
+        flag = ''
+    elif x == 'Enter':
+        flag = 'enter'
+        out = temp_out_3.get()
+        print(out)
+        send(out)
+    else:
+        temp_out_3.delete(0, 'end')
+    
+    if value == 'temp_out_4' and x != 'Enter' and x != 'Del':
+        if flag == 'enter':
+            temp_out_4.delete(0, 'end')
+        temp_out_4.insert(tk.END, x)
+        out = temp_out_4.get()
+        flag = ''
+    elif x == 'Enter':
+        flag = 'enter'
+        out = temp_out_4.get()
+        print(out)
+        send(out)
+    else:
+        temp_out_4.delete(0, 'end')
+    
+    if value == 'temp_out_5' and x != 'Enter' and x != 'Del':
+        if flag == 'enter':
+            temp_out_5.delete(0, 'end')
+        temp_out_5.insert(tk.END, x)
+        out = temp_out_5.get()
+        flag = ''
+    elif x == 'Enter':
+        flag = 'enter'
+        out = temp_out_5.get()
+        print(out)
+        send(out)
+    else:
+        temp_out_5.delete(0, 'end')
+        
+    if value == 'temp_out_6' and x != 'Enter' and x != 'Del':
+        if flag == 'enter':
+            temp_out_6.delete(0, 'end')
+        temp_out_6.insert(tk.END, x)
+        out = temp_out_6.get()
+        flag = ''
+    elif x == 'Enter':
+        flag = 'enter'
+        out = temp_out_6.get()
+        print(out)
+        send(out)
+    else:
+        temp_out_6.delete(0, 'end')
+    
+    if value == 'temp_out_7' and x != 'Enter' and x != 'Del':
+        if flag == 'enter':
+            temp_out_7.delete(0, 'end')
+        temp_out_7.insert(tk.END, x)
+        out = temp_out_7.get()
+        flag = ''
+    elif x == 'Enter':
+        flag = 'enter'
+        out = temp_out_7.get()
+        print(out)
+        send(out)
+    else:
+        temp_out_7.delete(0, 'end')
+        
+    if value == 'temp_out_8' and x != 'Enter' and x != 'Del':
+        if flag == 'enter':
+            temp_out_8.delete(0, 'end')
+        temp_out_8.insert(tk.END, x)
+        out = temp_out_8.get()
+        flag = ''
+    elif x == 'Enter':
+        flag = 'enter'
+        out = temp_out_8.get()
+        print(out)
+        send(out)
+    else:
+        temp_out_8.delete(0, 'end')
+        
+    if value == 'temp_out_9' and x != 'Enter' and x != 'Del':
+        if flag == 'enter':
+            temp_out_9.delete(0, 'end')
+        temp_out_9.insert(tk.END, x)
+        out = temp_out_9.get()
+        flag = ''
+    elif x == 'Enter':
+        flag = 'enter'
+        out = temp_out_9.get()
+        print(out)
+        send(out)
+    else:
+        temp_out_9.delete(0, 'end')
+        
+    if value == 'temp_out_11' and x != 'Enter' and x != 'Del':
+        if flag == 'enter':
+            temp_out_11.delete(0, 'end')
+        temp_out_11.insert(tk.END, x)
+        out = temp_out_11.get()
+        flag = ''
+    elif x == 'Enter':
+        flag = 'enter'
+        out = temp_out_11.get()
+        print(out)
+        send(out)
+    else:
+        temp_out_11.delete(0, 'end')
+        
+    if value == 'temp_out_12' and x != 'Enter' and x != 'Del':
+        if flag == 'enter':
+            temp_out_12.delete(0, 'end')
+        temp_out_12.insert(tk.END, x)
+        out = temp_out_12.get()
+        flag = ''
+    elif x == 'Enter':
+        flag = 'enter'
+        out = temp_out_12.get()
+        print(out)
+        send(out)
+    else:
+        temp_out_12.delete(0, 'end')
+    
+    if value == 'rpm_motor_set' and x != 'Enter' and x != 'Del':
+        if flag == 'enter':
+            rpm_motor_set.delete(0, 'end')
+        rpm_motor_set.insert(tk.END, x)
+        out = rpm_motor_set.get()
+        flag = ''
+    elif x == 'Enter':
+        flag = 'enter'
+        out = rpm_motor_set.get()
+        print(out)
+        send(out)
+    else:
+        rpm_motor_set.delete(0, 'end')
 
-def callback(sv):
-    print(sv.get())
-
-def sys_out(event):
-    sys.exit()
+def button_motor_state():
+    if motor_status['text'] == "START":
+        motor_status.configure(text="STOP", bg="red")
+    else:
+        motor_status.configure(text="START", bg="green")
 
 if __name__ == "__main__":
     
     connect()
     
-    t2 = threading.Thread(target = update_gui)
-    t2.daemon = True
-    t2.start()
+# =============================================================================
+#     t2 = threading.Thread(target = update_gui)
+#     t2.daemon = True
+#     t2.start()
+# =============================================================================
+    
+    font_set = font.Font(family='Helvetica', size=25, weight='bold')
     
     # ~~~~~~~Button DECLARATION~~~~~~~
 
-    startMotor = tk.Button(root, text="START", padx=85, pady=20, fg="white", bg="green")
-    MotorStepPlus = tk.Button(root, text="+", padx=42, pady=20, fg="white", bg="blue")
-    MotorStepMinus = tk.Button(root, text="-", padx=42, pady=20, fg="white", bg="blue")
+    motor_status = tk.Button(root, text="START", padx=2, pady=2, command=button_motor_state, bg="green", height=1, width=10)
+    MotorStepPlus = tk.Button(root, text="+", padx=25, pady=2, fg="white", bg="blue")
+    MotorStepMinus = tk.Button(root, text="-", padx=25, pady=2, fg="white", bg="blue")
 
+    motor_status['font'] = font_set
+    MotorStepPlus['font'] = font_set
+    MotorStepMinus['font'] = font_set
     
-    startMotor.place(x=1035, y= 695)
+    motor_status.place(x=1035, y= 695)
     MotorStepPlus.place(x=910, y= 695)
     MotorStepMinus.place(x=800, y= 695)
-    
-    sv = StringVar()
-    sv.trace("w", lambda name, index, mode, sv=sv: callback(sv))
-    
-    
 
     # ~~~~~~~Temperature OUT-DECLARATION~~~~~~~
 
-    temp_out_1 = Entry(width = 7, textvariable=sv)
-    temp_out_2 = Entry(width = 7, textvariable=sv)
-    temp_out_3 = Entry(width = 7, textvariable=sv)
-    temp_out_4 = Entry(width = 7, textvariable=sv)
-    temp_out_5 = Entry(width = 7, textvariable=sv)
-    temp_out_6 = Entry(width = 7, textvariable=sv)
-    temp_out_7 = Entry(width = 7, textvariable=sv)
-    temp_out_8 = Entry(width = 7, textvariable=sv)
-    temp_out_9 = Entry(width = 7, textvariable=sv)
-    temp_out_11 = Entry(width = 7, textvariable=sv)
-    temp_out_12 = Entry(width = 7, textvariable=sv)
+    temp_out_1 = Entry(width = 7)
+    temp_out_2 = Entry(width = 7)
+    temp_out_3 = Entry(width = 7)
+    temp_out_4 = Entry(width = 7)
+    temp_out_5 = Entry(width = 7)
+    temp_out_6 = Entry(width = 7)
+    temp_out_7 = Entry(width = 7)
+    temp_out_8 = Entry(width = 7)
+    temp_out_9 = Entry(width = 7)
+    temp_out_11 = Entry(width = 7)
+    temp_out_12 = Entry(width = 7)
 
 
     # ~~~~~~~Temperature IN-DECLARATION~~~~~~~
@@ -191,9 +382,9 @@ if __name__ == "__main__":
     rpm_7 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 150)   
     rpm_8 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 150)   
     rpm_9 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 150)
-    rpm_motor_set = Entry(width = 7) 
-    flow = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 100, max = 150)   
+    flow = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 100, max = 150)
     
+    rpm_motor_set = Entry(width = 7) 
 
     # ~~~~~~~Temperature OUT-LOCATION~~~~~~~
 
@@ -251,14 +442,16 @@ if __name__ == "__main__":
     amp_info.place(x=1100,y=830)
     
     temp_out_1.bind("<1>", lambda event: keyboard(temp = 'temp_out_1'))
-    temp_out_2.bind("<1>", keyboard)
-    temp_out_3.bind("<1>", keyboard)
-    temp_out_4.bind("<1>", keyboard)
-    temp_out_5.bind("<1>", keyboard)
-    temp_out_6.bind("<1>", keyboard)
-    temp_out_7.bind("<1>", keyboard)
-    temp_out_8.bind("<1>", keyboard)
-    temp_out_9.bind("<1>", keyboard)
-    root.bind("Key", sys_out)
+    temp_out_2.bind("<1>",  lambda event: keyboard(temp = 'temp_out_2'))
+    temp_out_3.bind("<1>",  lambda event: keyboard(temp = 'temp_out_3'))
+    temp_out_4.bind("<1>",  lambda event: keyboard(temp = 'temp_out_4'))
+    temp_out_5.bind("<1>",  lambda event: keyboard(temp = 'temp_out_5'))
+    temp_out_6.bind("<1>",  lambda event: keyboard(temp = 'temp_out_6'))
+    temp_out_7.bind("<1>",  lambda event: keyboard(temp = 'temp_out_7'))
+    temp_out_8.bind("<1>",  lambda event: keyboard(temp = 'temp_out_8'))
+    temp_out_9.bind("<1>",  lambda event: keyboard(temp = 'temp_out_9'))
+    temp_out_11.bind("<1>",  lambda event: keyboard(temp = 'temp_out_11'))
+    temp_out_12.bind("<1>",  lambda event: keyboard(temp = 'temp_out_12'))
+    rpm_motor_set.bind("<1>",  lambda event: keyboard(temp = 'rpm_motor_set'))
 
 root.mainloop()
