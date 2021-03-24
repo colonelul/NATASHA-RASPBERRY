@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import * 
 from tkinter.ttk import *
 import tkinter.font as font
+import numpy as np
 
 import serial
 
@@ -24,6 +25,7 @@ except:
 background_label = Label(root, image=filename)
 background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
+arr_temp = np.empty(9)
 serial_data = ''
 filter_data = ''
 update_period = 5
@@ -31,8 +33,10 @@ serial_object = None
 
 flag = ''
 
-frame = Frame(root)
-frame.pack(side = TOP, padx=0, pady=300)
+keyboard_frame = Frame(root)
+setting_frame = tk.Frame(root, height=100, width=100, bg='#7fa5b3')
+
+var1 = IntVar()
 
 def connect():
 
@@ -58,18 +62,36 @@ def update_gui():
     
     global filter_data
     global update_period
-    
+    global arr_temp
     new = time.time()
 
     while(1):
          if filter_data:
+             
              try:
-                 flow["value"] = filter_data
+                 str_temp_int_1.set(arr_temp[0])
+                 str_temp_int_2.set(arr_temp[1])
+                 str_temp_int_3.set(arr_temp[2])
+                 str_temp_int_4.set(arr_temp[3])
+                 str_temp_int_5.set(arr_temp[4])
+                 str_temp_int_6.set(arr_temp[5])
+                 str_temp_int_7.set(arr_temp[6])
+                 str_temp_int_8.set(arr_temp[7])
+                 str_temp_int_9.set(arr_temp[8])
              except:
                  pass
              
              if time.time() - new >= update_period:
-                 flow["value"] = 0
+                 str_temp_int_1.set('')
+                 str_temp_int_2.set('')
+                 str_temp_int_3.set('')
+                 str_temp_int_4.set('')
+                 str_temp_int_5.set('')
+                 str_temp_int_6.set('')
+                 str_temp_int_7.set('')
+                 str_temp_int_8.set('')
+                 str_temp_int_9.set('')
+                 
                  new = time.time()
 
 
@@ -77,12 +99,15 @@ def get_data():
     
     global serial_object
     global filter_data
+    global arr_temp 
     
     while(1):   
          try:
              filter_data = serial_object.readline()
              print(filter_data)
-         
+             for i in range(9):
+                 arr_temp[i] = filter_data[filter_data.find('t' + str(i) + '=') + 3:filter_data.find('t' + str(i + 1) + '=')]
+                     
          except TypeError:
              pass
 
@@ -97,6 +122,10 @@ def send(data):
 
 def keyboard(temp):
     
+    keyboard_frame.pack(side=TOP, padx=100, pady=100)
+    
+    keyboard_button_font = font.Font(family='Helvetica', size=20)
+    
     buttons = ['7', '8', '9',
                '4', '5', '6',
                '1', '2', '3',
@@ -104,17 +133,22 @@ def keyboard(temp):
                'Enter',
                ]
     
+    keyboard_text = Entry(keyboard_frame, width = 66)
+    keyboard_text.grid(row = 1, columnspan = 14)
+    
     varRow = 2
     varColumn = 0
     for button in buttons:
         command = lambda x = button: select(x, temp)
         if button != 'Enter':
-            tk.Button(frame, text = button, width = 5, bg="#000000", fg="#ffffff", activebackground="#ffffff",
-                   activeforeground="#000000", relief = 'raised', padx=4, pady=4, bd=4, command=command).grid(row = varRow, column = varColumn)
-        else:
-             tk.Button(frame, text = button, width = 30, bg="#000000", fg="#ffffff", activebackground="#ffffff",
-                   activeforeground="#000000", relief = 'raised', padx=4, pady=4, bd=4, command=command).grid(row = 6, column = 1)
+            tk.Button(keyboard_frame, text = button, height = 2, width = 7, bg="#000000", fg="#ffffff", activebackground="#ffffff",
+                   activeforeground="#000000", relief = 'raised', padx=4, pady=4, bd=4, command=command, font = keyboard_button_font).grid(row = varRow, column = varColumn)
         
+        
+        if button == 'Enter':
+            tk.Button(keyboard_frame, text = button, height = 2, width = 24, bg="#000000", fg="#ffffff", activebackground="#ffffff",
+                   activeforeground="#000000", relief = 'raised', padx=4, pady=4, bd=4, command=command, font = keyboard_button_font).grid(row = 6, columnspan = 3)
+               
         varColumn+=1
         if varColumn > 2 and varRow == 2:
             varColumn = 0
@@ -128,6 +162,7 @@ def keyboard(temp):
 
 def select(x, value):
     global flag 
+    
     if value == 'temp_out_1' and x != 'Enter' and x != 'Del':
         if flag == 'enter':
             temp_out_1.delete(0, 'end')
@@ -138,6 +173,7 @@ def select(x, value):
         flag = 'enter'
         out = temp_out_1.get()
         print(out)
+        keyboard_frame.pack_forget()
         send(out)
     else:
         temp_out_1.delete(0, 'end')
@@ -296,38 +332,78 @@ def select(x, value):
     else:
         rpm_motor_set.delete(0, 'end')
 
+def checkB():
+    if (var1.get() == 1):
+        print("dada")
+
+def setting():
+    window = tk.Toplevel(height=300, width=300)
+    window.title("Settings")
+    x = root.winfo_x()
+    y = root.winfo_y()
+    window.geometry("+%d+%d" % (x + 560, y + 300))
+    c1 = tk.Checkbutton(window, text='BLA',variable=var1, onvalue=1, offvalue=0, command=checkB)
+    c1.pack(fill='x', padx=50, pady=5)
+
+
+
 def button_motor_state():
     if motor_status['text'] == "START":
         motor_status.configure(text="STOP", bg="red")
     else:
         motor_status.configure(text="START", bg="green")
+    
+def button_motor_pompa_rece():
+    if motor_pompa_rece['text'] == "START-POMPA":
+        motor_pompa_rece.configure(text="STOP-POMPA", bg="red")
+    elif motor_pompa_rece['text'] == 'STOP-POMPA': 
+        motor_pompa_rece.configure(text="MOD-AUTO", bg="#cfc325")
+    else:
+        motor_pompa_rece.configure(text="START-POMPA", bg="green")
+
+def button_motor_pompa_cald():
+    if motor_pompa_cald['text'] == "START-POMPA":
+        motor_pompa_cald.configure(text="STOP-POMPA", bg="red")
+    elif motor_pompa_cald['text'] == 'STOP-POMPA': 
+        motor_pompa_cald.configure(text="MOD-AUTO", bg="#cfc325")
+    else: 
+        motor_pompa_cald.configure(text="START-POMPA", bg="green")
+    
+
 
 if __name__ == "__main__":
     
     connect()
     
-# =============================================================================
-#     t2 = threading.Thread(target = update_gui)
-#     t2.daemon = True
-#     t2.start()
-# =============================================================================
+    t2 = threading.Thread(target = update_gui)
+    t2.daemon = True
+    t2.start()
     
     font_set = font.Font(family='Helvetica', size=25, weight='bold')
+    font_set_pompa = font.Font(family='Helvetica', size=12, weight='bold')
     
     # ~~~~~~~Button DECLARATION~~~~~~~
 
     motor_status = tk.Button(root, text="START", padx=2, pady=2, command=button_motor_state, bg="green", height=1, width=10)
+    motor_pompa_rece = tk.Button(root, text="START-POMPA", padx=2, pady=2, command=button_motor_pompa_rece, bg="green", height=1, width=12)
+    motor_pompa_cald = tk.Button(root, text="START-POMPA", padx=2, pady=2, command=button_motor_pompa_cald, bg="green", height=1, width=12)
     MotorStepPlus = tk.Button(root, text="+", padx=25, pady=2, fg="white", bg="blue")
     MotorStepMinus = tk.Button(root, text="-", padx=25, pady=2, fg="white", bg="blue")
 
+    settings = tk.Button(root, text="SETTINGS", padx=2, pady=2, command=setting, bg="#6e9931", height=1, width=12)
+
     motor_status['font'] = font_set
+    motor_pompa_rece['font'] = font_set_pompa
+    motor_pompa_cald['font'] = font_set_pompa
     MotorStepPlus['font'] = font_set
     MotorStepMinus['font'] = font_set
     
     motor_status.place(x=1035, y= 695)
+    motor_pompa_cald.place(x=180, y= 720)
+    motor_pompa_rece.place(x=490, y= 720)
     MotorStepPlus.place(x=910, y= 695)
     MotorStepMinus.place(x=800, y= 695)
-
+    settings.place(x=1100, y=200)
     # ~~~~~~~Temperature OUT-DECLARATION~~~~~~~
 
     temp_out_1 = Entry(width = 7)
@@ -344,45 +420,78 @@ if __name__ == "__main__":
 
 
     # ~~~~~~~Temperature IN-DECLARATION~~~~~~~
+    str_temp_int_1 = StringVar()
+    str_temp_int_2 = StringVar()
+    str_temp_int_3 = StringVar()
+    str_temp_int_4 = StringVar()
+    str_temp_int_5 = StringVar()
+    str_temp_int_6 = StringVar()
+    str_temp_int_7 = StringVar()
+    str_temp_int_8 = StringVar()
+    str_temp_int_9 = StringVar()
+    str_temp_int_10 = StringVar()
+    str_temp_int_11 = StringVar()
+    str_temp_int_12 = StringVar()
+    str_temp_int_13 = StringVar()
+    str_temp_int_14 = StringVar()
+    str_temp_int_15 = StringVar()
+    str_temp_int_16 = StringVar()
+    str_temp_int_17 = StringVar()
+    str_temp_int_18 = StringVar()
+    str_temp_int_19 = StringVar()
+    str_temp_int_20 = StringVar()
     
-    temp_int_1 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 150)   
-    temp_int_2 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 150)   
-    temp_int_3 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 255)   
-    temp_int_4 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 255)   
-    temp_int_5 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 255)   
-    temp_int_6 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 255)   
-    temp_int_7 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 255)   
-    temp_int_8 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 255)   
-    temp_int_9 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 255)   
-    temp_int_10 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 255)   
-    temp_int_11 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 255)   
-    temp_int_12 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 255)   
-    temp_int_13 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 255)   
-    temp_int_14 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 255)   
-    temp_int_15 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 255)   
-    temp_int_16 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 255)   
-    temp_int_17 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 255)   
-    temp_int_18 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 255)   
-    temp_int_19 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 255)   
-    temp_int_20 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 255)   
+    temp_int_1 = Label(root, width=7, textvariable = str_temp_int_1)
+    temp_int_2 = Label(root, width=7, textvariable = str_temp_int_2)
+    temp_int_3 = Label(root, width=7, textvariable = str_temp_int_3)
+    temp_int_4 = Label(root, width=7, textvariable = str_temp_int_4)
+    temp_int_5 = Label(root, width=7, textvariable = str_temp_int_5)
+    temp_int_6 = Label(root, width=7, textvariable = str_temp_int_6)
+    temp_int_7 = Label(root, width=7, textvariable = str_temp_int_7)
+    temp_int_8 = Label(root, width=7, textvariable = str_temp_int_8)
+    temp_int_9 = Label(root, width=7, textvariable = str_temp_int_9)
+    temp_int_10 = Label(root, width=7, textvariable = str_temp_int_10)
+    temp_int_11 = Label(root, width=7, textvariable = str_temp_int_11)
+    temp_int_12 = Label(root, width=7, textvariable = str_temp_int_12)
+    temp_int_13 = Label(root, width=7, textvariable = str_temp_int_13)
+    temp_int_14 = Label(root, width=7, textvariable = str_temp_int_14)
+    temp_int_15 = Label(root, width=7, textvariable = str_temp_int_15)
+    temp_int_16 = Label(root, width=7, textvariable = str_temp_int_16)
+    temp_int_17 = Label(root, width=7, textvariable = str_temp_int_17)
+    temp_int_18 = Label(root, width=7, textvariable = str_temp_int_18)
+    temp_int_19 = Label(root, width=7, textvariable = str_temp_int_19)
+    temp_int_20 = Label(root, width=7, textvariable = str_temp_int_20)
     
     # ~~~~~~~Temperature IN-DECLARATION~~~~~~~
     
-    amp_info = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 255)   
+    str_amp_info = StringVar()
+    
+    amp_info = Label(root, width=7, textvariable = str_amp_info) 
 
     
     # ~~~~~~~RPM IN-DECLARATION~~~~~~~
     
-    rpm_1 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 150)   
-    rpm_2 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 150)   
-    rpm_3 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 150)   
-    rpm_4 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 150)   
-    rpm_5 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 150)   
-    rpm_6 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 150)   
-    rpm_7 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 150)   
-    rpm_8 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 150)   
-    rpm_9 = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 50, max = 150)
-    flow = Progressbar(orient = HORIZONTAL, mode = 'determinate', length = 100, max = 150)
+    str_rpm_1 = StringVar()
+    str_rpm_2 = StringVar()
+    str_rpm_3 = StringVar()
+    str_rpm_4 = StringVar()
+    str_rpm_5 = StringVar()
+    str_rpm_6 = StringVar()
+    str_rpm_7 = StringVar()
+    str_rpm_8 = StringVar()
+    str_rpm_9 = StringVar()
+    str_flow = StringVar()
+    
+    rpm_1 = Label(root, width=7, textvariable = str_rpm_1) 
+    rpm_2 = Label(root, width=7, textvariable = str_rpm_2) 
+    rpm_3 = Label(root, width=7, textvariable = str_rpm_3) 
+    rpm_4 = Label(root, width=7, textvariable = str_rpm_4) 
+    rpm_5 = Label(root, width=7, textvariable = str_rpm_5) 
+    rpm_6 = Label(root, width=7, textvariable = str_rpm_6) 
+    rpm_7 = Label(root, width=7, textvariable = str_rpm_7) 
+    rpm_8 = Label(root, width=7, textvariable = str_rpm_8) 
+    rpm_9 = Label(root, width=7, textvariable = str_rpm_9) 
+    flow = Label(root, width=7, textvariable = str_flow) 
     
     rpm_motor_set = Entry(width = 7) 
 
@@ -414,14 +523,16 @@ if __name__ == "__main__":
     temp_int_10.place(x = 685, y = 830)
     temp_int_11.place(x = 350, y = 760)
     temp_int_12.place(x = 40, y = 760)
-    temp_int_13.place(x = 100, y = 100)
-    temp_int_14.place(x = 100, y = 100)
-    temp_int_15.place(x = 100, y = 100)
-    temp_int_16.place(x = 100, y = 100)
-    temp_int_17.place(x = 100, y = 100)
-    temp_int_18.place(x = 100, y = 100)
-    temp_int_19.place(x = 100, y = 100)
-    temp_int_20.place(x = 100, y = 100)
+# =============================================================================
+#     temp_int_13.place(x = 100, y = 100)
+#     temp_int_14.place(x = 100, y = 100)
+#     temp_int_15.place(x = 100, y = 100)
+#     temp_int_16.place(x = 100, y = 100)
+#     temp_int_17.place(x = 100, y = 100)
+#     temp_int_18.place(x = 100, y = 100)
+#     temp_int_19.place(x = 100, y = 100)
+#     temp_int_20.place(x = 100, y = 100)
+# =============================================================================
     
     # ~~~~~~~RPM IN-LOCATION~~~~~~~
     
