@@ -1,0 +1,1 @@
+[{'hat': 7, 'carpet': 5}, {'syrup': 15, 'yogurt': 18}]
