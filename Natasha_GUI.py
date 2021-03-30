@@ -7,11 +7,6 @@ import numpy as np
 import serial
 import _pickle as pickle
 import ast
-
-try:
-    cache_file  = open("natasha_cache.txt", "x")
-except:
-    pass
     
 root = Tk()
 root.winfo_toplevel().title("NATASHA")
@@ -57,6 +52,14 @@ keyboard_text = None
 var1 = IntVar()
 val_min_max = StringVar()
 flag = ''
+
+try:
+    cache_file  = open("natasha_cache.txt", "x")
+    cache_file.write(str(dictionary_cache))
+    cache_file.close()
+except:
+    pass
+
 
 def connect():
 
